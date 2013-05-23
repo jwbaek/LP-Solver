@@ -212,23 +212,30 @@ vector<int> LP::findNewBasis(vector<int> basis)
 	return newBasis;
 }
 
-void LP::auxiliaryProblem()
+LP LP::auxiliaryProblem()
 {
 	LP auxiliary;
 	Matrix identity = Matrix(constraint.getRows());
-	constraint.append(identity);
+
+	Matrix newConstraint = constraint;
+	newConstraint.append(identity);
+	auxiliary.setConstraint(newConstraint);
 
 	Matrix newObjective(objective.getRows()+constraint.getRows(),objective.getCols());
 	for (int i=0; i<objective.getRows(); i++)
 	{
-		newObjective.setNum(i,0,objective.getNum(i,0));
+		newObjective.setNum(i,0,Number());
 	}
 	for (int j=objective.getRows(); j < newObjective.getRows(); j++)
 	{
-		newObjective.setNum(j,0,Number());
+		newObjective.setNum(j,0,Number(-1));
 	}
-	objective = newObjective;
+	auxiliary.setObjective(newObjective);
 
+	auxiliary.setRHS(RHS);
+	auxiliary.setRelVec(relVec);
+	auxiliary.setObjConst(objConst);
+	return auxiliary;
 }
 
 bool LP::isValidLP()
@@ -240,6 +247,11 @@ bool LP::isValidLP()
 		return false;
 
 	return true;
+}
+
+bool LP::isSEF()
+{
+	return isValidLP() && isMax() && isRelSame() && relVec[0] == 0;
 }
 
 // static functions

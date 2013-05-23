@@ -2,20 +2,15 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <algorithm>
 #include <vector>
+#include <cstdlib>
 #include "LP.h"
 #include "matrix.h"
 
+using namespace std;
 
-/*
- given a LP in SEF and a feasible basis, 
- either 
- 1) return an optimal solution
- 2) state it is unbounded
- 3) state it is infeasible
-*/
-
-Matrix findSolution(LP canonical, vector<int> basis)
+Matrix findSolutionGivenCanonical(LP canonical, vector<int> basis)
 {
 	int numVars = canonical.getConstraint().getCols();
 	Matrix solution(numVars, 1);
@@ -26,7 +21,15 @@ Matrix findSolution(LP canonical, vector<int> basis)
 	return solution;
 }
 
-void solveGivenFeasibleBasis(LP lp, vector<int> basis)
+/*
+ given a LP in SEF and a feasible basis,
+ either
+ 1) return an optimal solution
+ 2) state it is unbounded
+ 3) state it is infeasible
+*/
+
+vector<int> solveGivenFeasibleBasis(LP lp, vector<int> basis)
 {
 	vector<int> currBasis = basis;
 	while(true)
@@ -36,7 +39,8 @@ void solveGivenFeasibleBasis(LP lp, vector<int> basis)
 		cout << canonical << endl << endl;
 		if(canonical.getObjective().isNonPositive())
 		{
-			cout << "Optimal solution: " << endl << findSolution(canonical, currBasis) << endl;
+			Matrix sol = findSolutionGivenCanonical(canonical, currBasis);
+			cout << "Optimal solution: " << endl << sol << endl;
 			cout << "With optimal value: " << canonical.getObjConst() << endl;
 			break;
 		}
@@ -50,59 +54,84 @@ void solveGivenFeasibleBasis(LP lp, vector<int> basis)
 			currBasis = canonical.findNewBasis(currBasis);
 		}
 	}
+	return currBasis;
 }
 
-int main()
+vector<int> solveLP(LP lp)
 {
-	/*
-	cout << "Enter a matrix: " << endl;
-	Matrix m;
-	cin >> m;
-	cout << m;
-	system("Pause");
-	*/
-	try
-	{	
-		cout << "Enter an LP: " << endl;
+	if(!lp.isSEF())
+	{
+		cerr << "LP is not in SEF" << endl;
+		exit(1);
+	}
+	LP aux = lp.auxiliaryProblem();
+	int numVars = lp.getConstraint().getCols();
+	int numConstraints = lp.getConstraint().getRows();
+	vector<int> initialBasis;
+	// initialBasis = {3,4,5}
+	for(int i=numVars+1; i<numVars+numConstraints+1; i++)
+	{
+		initialBasis.push_back(i);
+	}
+	cout << initialBasis << endl;
+	// solve auxiliary problem
+	vector<int> feasibleAuxiliaryBasis = solveGivenFeasibleBasis(aux, initialBasis);
+	LP auxiliaryCanonical = aux.turnToCanonical(feasibleAuxiliaryBasis);
+	Matrix auxiliarySol = findSolutionGivenCanonical(auxiliaryCanonical,feasibleAuxiliaryBasis);
+	if(auxiliaryCanonical.getObjConst() != 0)
+	{
+		cout << "infeasible" << endl;
+	}
+
+	vector<int> feasibleBasis;
+	int deficient = 0;			// holds the number of elements in basis that are not
+								// in original LP (ie. from auxiliary problem)
+	for(int i=0; i<feasibleAuxiliaryBasis.size(); i++)
+	{
+		int curr = feasibleAuxiliaryBasis.at(i);
+		if(curr <= numVars)
+		{
+			feasibleBasis.push_back(curr);
+		}
+		else
+		{
+			deficient++;
+		}
+	}
+	int j =0;
+	// add elements from the original LP that were set to 0
+	while(deficient>0)
+	{
+		if (auxiliarySol.getNum(j,0) == 0)
+		{
+			feasibleBasis.push_back(j+1);
+			deficient--;
+		}
+		j++;
+	}
+	return solveGivenFeasibleBasis(lp, feasibleBasis);
+}
+
+int main(int argc, char* argv[]) {
+	try{
+		cout << "argc = " << argc << endl;
+		for(int i = 0; i < argc; i++)
+			cout << "argv[" << i << "] = " << argv[i] << endl;
 		LP linear;
-		ifstream ifs("sample.txt"); //open file
+		ifstream ifs(argv[1]);
 		if(!ifs.is_open()) {
 			cerr << "sample LP could not be opened!" << endl;
-			system("Pause");
 			exit(1);
 		}
 		ifs >> linear;
+		cout << "Original linear program is:" << endl;
 		cout << linear << endl;
-		cout << "auxiliary: " << endl;
-		linear.auxiliaryProblem();
-		cout << linear << endl;
-		system("Pause");
-
-		int myints[] = {4, 5, 6};
-		std::vector<int> b (myints, myints + sizeof(myints) / sizeof(int) );
-		LP canon = linear.turnToCanonical(b);
-		cout << "new LP: " << endl << canon;
-		cout << "solution is " << endl << findSolution(canon, b);
-		solveGivenFeasibleBasis(canon,b);
-		system("Pause");
+		vector<int> basis = solveLP(linear);
 	}
 	catch (int e)
 	{
 		cout << "An exception occurred. Exception Nr. " << e << endl;
-		system("Pause");
+		exit(1);
 	}
-	
-	/*
-	Matrix m1;
-	Matrix m2;
-	cout << "Enter Matrix 1: " << endl;
-	cin >> m1;
-	cout << "Enter Matrix 2: " << endl;
-	cin >> m2;
-	Matrix m3 = m1*m2;
-	cout << "m1*m2 is " << endl;
-	cout << m3;
-	*/
-	system("Pause");
 	return 0;
 }

@@ -41,8 +41,9 @@ class LP
 		// methods
 		LP turnToCanonical(vector<int> basis);
 		vector<int> findNewBasis(vector<int> basis);
-		void auxiliaryProblem();
+		LP auxiliaryProblem();
 		bool isValidLP();
+		bool isSEF();
 		static Rel stringToRel(string str);
 		static string relToString(Rel r);
 
