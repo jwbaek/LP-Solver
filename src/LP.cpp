@@ -195,8 +195,8 @@ vector<int> LP::findNewBasis(vector<int> basis)
 		}
 	}
 	entering++;
-	cout << "toleave is " << toLeave << endl;
-	cout << "entering is " << entering << endl;
+	cout << "To leave is " << toLeave << endl;
+	cout << "Entering is " << entering << endl << endl;
 	int myints[] = {toLeave, entering};
 	std::vector<int> newBasis(basis);
 	newBasis.push_back(entering);

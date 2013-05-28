@@ -36,12 +36,12 @@ vector<int> solveGivenFeasibleBasis(LP lp, vector<int> basis)
 	{
 		LP canonical = lp.turnToCanonical(currBasis);
 		cout << "Canonical for basis " << currBasis << " is:" << endl;
-		cout << canonical << endl << endl;
+		cout << canonical << endl;
 		if(canonical.getObjective().isNonPositive())
 		{
 			Matrix sol = findSolutionGivenCanonical(canonical, currBasis);
 			cout << "Optimal solution: " << endl << sol << endl;
-			cout << "With optimal value: " << canonical.getObjConst() << endl;
+			cout << "With optimal value: " << canonical.getObjConst() << endl << endl;
 			break;
 		}
 		else if(canonical.getConstraint().oneColNonPositive())
@@ -65,6 +65,8 @@ vector<int> solveLP(LP lp)
 		exit(1);
 	}
 	LP aux = lp.auxiliaryProblem();
+	cout << "Auxiliary problem is: " << endl;
+	cout << aux << endl;
 	int numVars = lp.getConstraint().getCols();
 	int numConstraints = lp.getConstraint().getRows();
 	vector<int> initialBasis;
@@ -79,7 +81,11 @@ vector<int> solveLP(LP lp)
 	Matrix auxiliarySol = findSolutionGivenCanonical(auxiliaryCanonical,feasibleAuxiliaryBasis);
 	if(auxiliaryCanonical.getObjConst() != 0)
 	{
-		cout << "infeasible" << endl;
+		cout << "Infeasible." << endl;
+		return feasibleAuxiliaryBasis;
+	}
+	else{
+	    cout << "Optimal value to auxiliary problem is 0. Now solving original problem with feasible basis." << endl << endl;
 	}
 
 	vector<int> feasibleBasis;
