@@ -73,7 +73,6 @@ vector<int> solveLP(LP lp)
 	{
 		initialBasis.push_back(i);
 	}
-	cout << initialBasis << endl;
 	// solve auxiliary problem
 	vector<int> feasibleAuxiliaryBasis = solveGivenFeasibleBasis(aux, initialBasis);
 	LP auxiliaryCanonical = aux.turnToCanonical(feasibleAuxiliaryBasis);
@@ -114,9 +113,7 @@ vector<int> solveLP(LP lp)
 
 int main(int argc, char* argv[]) {
 	try{
-		cout << "argc = " << argc << endl;
-		for(int i = 0; i < argc; i++)
-			cout << "argv[" << i << "] = " << argv[i] << endl;
+	    cout << "File: " << argv[1] << endl << endl;;
 		LP linear;
 		ifstream ifs(argv[1]);
 		if(!ifs.is_open()) {
