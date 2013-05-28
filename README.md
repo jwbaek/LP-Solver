@@ -17,12 +17,13 @@ sample.txt:
         (2 1 -1 -2)x = 10
         (0 -1 0 3)x = -2
 
-run:
+Run:
 
 	$ make
 	$ ./Solver sample.txt
 
 Sample output:
+
     File: sample.txt
     
     Original linear program is:
@@ -80,7 +81,7 @@ Sample output:
     |    0 |
     With optimal value: 0
     
-    Optimal value to auxiliary problem is 0. Now solving original   problem with feasible basis.
+    Optimal value to auxiliary problem is 0. Now solving original problem with feasible basis.
     
     Canonical for basis ( 1  3  4 ) is:
     max (    0     6     0     0 )x - -29
